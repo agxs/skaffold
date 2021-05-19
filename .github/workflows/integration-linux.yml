@@ -1,8 +1,6 @@
 name: release (linux)
 
-on:
-  schedule:
-  - cron: "0 10 * * *"
+on: [push, pull_request]
 
 jobs:
 
@@ -14,9 +12,8 @@ jobs:
         kustomize_version: [3.5.4]
         ko_version: [0.4.0]
         kompose_version: [1.21.0]
-        gcloud_sdk_version: [276.0.0]
         container_structure_tests_version: [1.8.0]
-        minikube_version: [1.11.0]
+        minikube_version: [1.20.0]
         integration_test_partitions: [0, 1, 2, 3]
     steps:
 
@@ -48,16 +45,6 @@ jobs:
         wget -O kompose https://github.com/kubernetes/kompose/releases/download/v${{ matrix.kompose_version }}/kompose-linux-amd64 && chmod +x kompose
         sudo mv kompose /usr/local/bin/
 
-    - name: Install GCloud
-      run: |
-        wget -O gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud_sdk_version }}-linux-x86_64.tar.gz
-        sudo tar -xvf gcloud.tar.gz -C /
-        sudo CLOUDSDK_PYTHON="python2.7" /google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --disable-installation-options
-        echo "/google-cloud-sdk/bin" >> $GITHUB_PATH
-
-    - name: Configure GCloud with Docker
-      run:  sudo gcloud auth configure-docker
-
     - name: Install Container Structure Test
       run: |
         wget -O container-structure-test https://storage.googleapis.com/container-structure-test/v${{ matrix.container_structure_tests_version }}/container-structure-test-linux-amd64 && chmod +x container-structure-test
@@ -65,8 +52,6 @@ jobs:
 
     - name: Setup other files and permissions
       run: |
-        sudo chown $(whoami) /home/$(whoami)/.config/gcloud -R
-        sudo chmod g+rw /home/$(whoami)/.config/gcloud -R
         sudo chown $(whoami):docker /home/$(whoami)/.docker -R
         sudo chmod g+rw /home/$(whoami)/.docker -R
         echo '{}' > /home/$(whoami)/.docker/config.json
@@ -78,14 +63,21 @@ jobs:
         sudo install minikube /usr/local/bin/minikube
         minikube start --profile=minikube --driver=docker
 
-    - name: Install Skaffold release binary
+    - name: Make and Install Skaffold binary from current PR
       run: |
-        curl -Lo skaffold https://storage.googleapis.com/skaffold/builds/${{ env.SKAFFOLD_VERSION }}/skaffold-linux-amd64
-        sudo install skaffold /usr/local/bin/skaffold
+        make
+        sudo install "/home/$(whoami)/work/skaffold/skaffold/out/skaffold" /usr/local/bin/skaffold
+
+    - name: Install kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        sudo install kubectl /usr/local/bin/kubectl
+        kubectl get pods -A
 
     - name: Run integration tests
       env:
         TOKEN: ${{ secrets.TOKEN }}
+        INTEGRATION_TEST_ARGS: "-v"
       run: |
         skaffold config set --global collect-metrics false
         sudo IT_PARTITION=${{ matrix.integration_test_partitions }} make integration-tests
