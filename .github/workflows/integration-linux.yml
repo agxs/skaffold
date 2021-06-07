@@ -1,8 +1,7 @@
 name: release (linux)
 
-on:
-  schedule:
-  - cron: "0 10 * * *"
+# Triggers the workflow on push or pull request events
+on: [push, pull_request]
 
 jobs:
 
@@ -14,9 +13,9 @@ jobs:
         kustomize_version: [3.5.4]
         ko_version: [0.4.0]
         kompose_version: [1.21.0]
-        gcloud_sdk_version: [276.0.0]
+        gcloud_sdk_version: [343.0.0]
         container_structure_tests_version: [1.8.0]
-        minikube_version: [1.11.0]
+        minikube_version: [1.20.0]
         integration_test_partitions: [0, 1, 2, 3]
     steps:
 
@@ -63,29 +62,42 @@ jobs:
         wget -O container-structure-test https://storage.googleapis.com/container-structure-test/v${{ matrix.container_structure_tests_version }}/container-structure-test-linux-amd64 && chmod +x container-structure-test
         sudo mv container-structure-test /usr/local/bin/
 
-    - name: Setup other files and permissions
+    - name: Find gcloud files
       run: |
-        sudo chown $(whoami) /home/$(whoami)/.config/gcloud -R
-        sudo chmod g+rw /home/$(whoami)/.config/gcloud -R
-        sudo chown $(whoami):docker /home/$(whoami)/.docker -R
-        sudo chmod g+rw /home/$(whoami)/.docker -R
-        echo '{}' > /home/$(whoami)/.docker/config.json
-        mkdir -p /home/$(whoami)/.m2/ && cp ./hack/maven/settings.xml /home/$(whoami)/.m2/settings.xml
+        find . -name "*gcloud*"
+        
+    # - name: Setup other files and permissions
+    #   run: |
+    #     sudo chown $(whoami) /home/$(whoami)/.config/gcloud -R
+    #     sudo chmod g+rw /home/$(whoami)/.config/gcloud -R
+    #     sudo chown $(whoami):docker /home/$(whoami)/.docker -R
+    #     sudo chmod g+rw /home/$(whoami)/.docker -R
+    #     echo '{}' > /home/$(whoami)/.docker/config.json
+    #     mkdir -p /home/$(whoami)/.m2/ && cp ./hack/maven/settings.xml /home/$(whoami)/.m2/settings.xml
 
-    - name: Install Minikube and start cluster
-      run: |
-        curl -Lo minikube https://storage.googleapis.com/minikube/releases/v${{ matrix.minikube_version }}/minikube-linux-amd64
-        sudo install minikube /usr/local/bin/minikube
-        minikube start --profile=minikube --driver=docker
+    # # - name: Setup other files and permissions
+    # #   run: |
+    # #     sudo chown $(whoami) /home/$(whoami)/.config/gcloud -R
+    # #     sudo chmod g+rw /home/$(whoami)/.config/gcloud -R
+    # #     sudo chown $(whoami):docker /home/$(whoami)/.docker -R
+    # #     sudo chmod g+rw /home/$(whoami)/.docker -R
+    # #     echo '{}' > /home/$(whoami)/.docker/config.json
+    # #     mkdir -p /home/$(whoami)/.m2/ && cp ./hack/maven/settings.xml /home/$(whoami)/.m2/settings.xml
 
-    - name: Install Skaffold release binary
-      run: |
-        curl -Lo skaffold https://storage.googleapis.com/skaffold/builds/${{ env.SKAFFOLD_VERSION }}/skaffold-linux-amd64
-        sudo install skaffold /usr/local/bin/skaffold
+    # - name: Install Minikube and start cluster
+    #   run: |
+    #     curl -Lo minikube https://storage.googleapis.com/minikube/releases/v${{ matrix.minikube_version }}/minikube-linux-amd64
+    #     sudo install minikube /usr/local/bin/minikube
+    #     minikube start --profile=minikube --driver=docker
 
-    - name: Run integration tests
-      env:
-        TOKEN: ${{ secrets.TOKEN }}
-      run: |
-        skaffold config set --global collect-metrics false
-        sudo IT_PARTITION=${{ matrix.integration_test_partitions }} make integration-tests
+    # - name: Make and Install Skaffold binary from current PR
+    #   run: |
+    #     make
+    #     sudo install "/home/$(whoami)/work/skaffold/skaffold/out/skaffold" /usr/local/bin/skaffold
+
+    # - name: Run integration tests
+    #   env:
+    #     TOKEN: ${{ secrets.TOKEN }}
+    #   run: |
+    #     skaffold config set --global collect-metrics false
+    #     sudo IT_PARTITION=${{ matrix.integration_test_partitions }} make integration-tests
