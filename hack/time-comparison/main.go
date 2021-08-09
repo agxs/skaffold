@@ -35,13 +35,9 @@ import (
 
 const numBinaries = 2
 
-const appName = "microservices"
-
 // TODO(aaron-prindle) figure out these params for users...
 const commentText = "// test comment"
-const filePath = "leeroy-app/app.go"
-const defaultConfigFilePath = "config.yaml"
-const defaultYamlInputFilePath = "yaml-input-file.yaml"
+const configFile = "config.yaml"
 
 const configFileTemplate = `applications:
 - name: {{.AppName}}
@@ -50,26 +46,28 @@ const configFileTemplate = `applications:
     command: sh -c "printf "{{.CommentText}}\n" >> {{.FilePath}}"
 `
 
-type ConfigFileInputs struct {
-	AppName     string
-	CommentText string
-	FilePath    string
+type Config struct {
+	Name                  string `yaml:"name,omitempty"`
+	DevIterations         int    `yaml:"devIterations,omitempty"`
+	FirstSkaffoldFlags    string `yaml:"firstSkaffoldFlags,omitempty"`
+	SecondSkaffoldFlags   string `yaml:"secondSkaffoldFlags,omitempty"`
+	ExampleAppName        string `yaml:"exampleAppName,omitempty"`
+	ExampleFileToEditPath string `yaml:"exampleFileToEditPath,omitempty"`
 }
 
 var (
-	devIterations       int
-	configFile          string
-	yamlInputFile       string
-	firstSkaffoldFlags  string
-	secondSkaffoldFlags string
+	conf          Config
+	yamlInputFile string
 )
 
 func init() {
-	flag.StringVar(&configFile, "file", defaultConfigFilePath, "path to config file")
-	flag.StringVar(&yamlInputFile, "yaml-input-file", defaultYamlInputFilePath, "path to yaml file with input args")
-	flag.IntVar(&devIterations, "dev-iterations", 2, "number of dev iterations to run for skaffold.  For one initial loop and one 'inner loop', --dev-iterations=2")
-	flag.StringVar(&firstSkaffoldFlags, "first-skaffold-flags", "", "flag opts to pass to first skaffold binary invocations")
-	flag.StringVar(&secondSkaffoldFlags, "second-skaffold-flags", "", "flag opts to pass to second skaffold binary invocations")
+	// flag.StringVar(&configFile, "file", "config.yaml", "path to config file")
+	flag.IntVar(&conf.DevIterations, "dev-iterations", 2, "number of dev iterations to run for skaffold.  For one initial loop and one 'inner loop', --dev-iterations=2")
+	flag.StringVar(&conf.ExampleAppName, "example-app-name", "microservices", "name of example app under examples/ to use - default is 'microservices'")
+	flag.StringVar(&conf.ExampleFileToEditPath, "example-file-to-edit-path", "leeroy-app/app.go", "name of example file to modify during dev session, assumes root ex: workdir=examples/microservices - default is 'leeroy-app/app.go'")
+	flag.StringVar(&conf.FirstSkaffoldFlags, "first-skaffold-flags", "", "flag opts to pass to first skaffold binary invocations")
+	flag.StringVar(&conf.SecondSkaffoldFlags, "second-skaffold-flags", "", "flag opts to pass to second skaffold binary invocations")
+	flag.StringVar(&yamlInputFile, "", "yaml-input-file.yaml", "path to yaml file with input args")
 
 }
 
@@ -77,11 +75,18 @@ func main() {
 	ctx := context.Background()
 	flag.Parse()
 
-	var c conf
-	c.getConf()
-
-	fmt.Printf("%+v\n", c)
-	os.Exit(0)
+	// if yamlInputFile set, values from that file override flag opts
+	if yamlInputFile != "" {
+		yamlFile, err := ioutil.ReadFile(yamlInputFile)
+		if err != nil {
+			logrus.Fatalf("error reading yaml input file: %v ", err)
+		}
+		err = yaml.Unmarshal(yamlFile, conf)
+		if err != nil {
+			logrus.Fatalf("error unmarshalling yaml input file: %v", err)
+		}
+		logrus.Infof("unmarshalled yaml input file into Config struct: %+v", conf)
+	}
 
 	if len(flag.Args()) < numBinaries+1 {
 		// time-comparison --first-skaffold-flags="--build-concurrency=true" \
@@ -94,7 +99,7 @@ func main() {
 		logrus.Fatal(err)
 	}
 	commentPath := flag.Args()[len(flag.Args())-1]
-	skaffoldFlags := []string{firstSkaffoldFlags, secondSkaffoldFlags}
+	skaffoldFlags := []string{conf.FirstSkaffoldFlags, conf.SecondSkaffoldFlags}
 
 	var b bytes.Buffer
 	workDir, err := os.Getwd()
@@ -102,15 +107,17 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	// go template
-	configFileInputs := ConfigFileInputs{ //store the date and time in a struct
-		AppName:     appName,
-		CommentText: commentText,
-		FilePath:    filePath,
+	configFileInputs := struct {
+		AppName     string
+		CommentText string
+		FilePath    string
+	}{
+		conf.ExampleAppName,
+		commentText,
+		conf.ExampleFileToEditPath,
 	}
 
-	// t, err := template.ParseFiles(defaultConfigFilePath)
-	t, err := template.New(defaultConfigFilePath).Parse(configFileTemplate)
+	t, err := template.New(configFile).Parse(configFileTemplate)
 	if err != nil {
 		log.Print("template parsing error: ", err)
 	}
@@ -123,7 +130,7 @@ func main() {
 	// write file
 	ioutil.WriteFile(configFile, w.Bytes(), 0644)
 	defer func() {
-		if err := os.Remove(defaultConfigFilePath); err != nil {
+		if err := os.Remove(configFile); err != nil {
 			logrus.Fatal(err)
 		}
 	}()
@@ -166,23 +173,4 @@ func main() {
 	if err := ioutil.WriteFile(filepath.Join(workDir, commentPath), b.Bytes(), 0644); err != nil {
 		logrus.Fatal(err)
 	}
-}
-
-type conf struct {
-	Name               string `yaml:"name"`
-	FirstSkaffoldFlags string `yaml:"firstSkaffoldFlags"`
-}
-
-func (c *conf) getConf() *conf {
-
-	yamlFile, err := ioutil.ReadFile(yamlInputFile)
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-	err = yaml.Unmarshal(yamlFile, c)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-	}
-
-	return c
 }
