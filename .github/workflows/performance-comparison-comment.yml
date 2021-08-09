@@ -1,0 +1,12 @@
+name: Run Performance Comparison Parse Comment
+
+on: [issue_comment]
+
+jobs:
+  remove_label:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Parse Comment For performance-comparison Args
+      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+      run: |
+        echo "hello world"
