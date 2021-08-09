@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  run-performance-comparison-comment-v10:
+  run-performance-comparison-comment-v11:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code into the Go module directory
@@ -30,5 +30,4 @@ jobs:
     - name: Run performance comparison benchmarks
       working-directory: ./hack/time-comparison
       run: |
-        skaffold config set --global collect-metrics false
         time-comparison-bin --yaml-input-file="yaml-input-file.yaml"
