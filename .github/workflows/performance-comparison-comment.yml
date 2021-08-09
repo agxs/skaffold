@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  run-performance-comparison-comment-v5:
+  run-performance-comparison-comment-v6:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code into the Go module directory
@@ -16,7 +16,7 @@ jobs:
     - name: Parse Comment For performance-comparison Args
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       run: |
-        echo $( tail -n +2 <<< "${{ github.event.comment.body }}") > out.yaml
+        printf $( tail -n +2 <<< "${{ github.event.comment.body }}") > out.yaml
 
     - name: Parse Comment For performance-comparison Args
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
