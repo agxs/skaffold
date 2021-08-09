@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  run-performance-comparison-comment-v11:
+  run-performance-comparison-comment-v12:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code into the Go module directory
@@ -30,4 +30,4 @@ jobs:
     - name: Run performance comparison benchmarks
       working-directory: ./hack/time-comparison
       run: |
-        time-comparison-bin --yaml-input-file="yaml-input-file.yaml"
+        time-comparison --yaml-input-file="yaml-input-file.yaml"
