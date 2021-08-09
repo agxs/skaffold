@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  remove_label:
+  run-performance-comparison-comment-v5:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code into the Go module directory
@@ -18,7 +18,13 @@ jobs:
       run: |
         echo $( tail -n +2 <<< "${{ github.event.comment.body }}") > out.yaml
 
+    - name: Parse Comment For performance-comparison Args
+      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+      run: |
+        cat out.yaml
+
     - name: yaml-lint
+      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       uses: ibiqlik/action-yamllint@v3
       with:
         file_or_dir: out.yaml
