@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  run-performance-comparison-comment-v9:
+  run-performance-comparison-comment-v10:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code into the Go module directory
