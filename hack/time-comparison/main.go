@@ -29,6 +29,7 @@ import (
 	"text/template"
 
 	timecomp "github.com/GoogleContainerTools/skaffold/hack/time-comparison/metrics-collector"
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/yaml"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,6 +41,7 @@ const appName = "microservices"
 const commentText = "// test comment"
 const filePath = "leeroy-app/app.go"
 const defaultConfigFilePath = "config.yaml"
+const defaultYamlInputFilePath = "yaml-input-file.yaml"
 
 const configFileTemplate = `applications:
 - name: {{.AppName}}
@@ -57,12 +59,14 @@ type ConfigFileInputs struct {
 var (
 	devIterations       int
 	configFile          string
+	yamlInputFile       string
 	firstSkaffoldFlags  string
 	secondSkaffoldFlags string
 )
 
 func init() {
 	flag.StringVar(&configFile, "file", defaultConfigFilePath, "path to config file")
+	flag.StringVar(&yamlInputFile, "yaml-input-file", defaultYamlInputFilePath, "path to yaml file with input args")
 	flag.IntVar(&devIterations, "dev-iterations", 2, "number of dev iterations to run for skaffold.  For one initial loop and one 'inner loop', --dev-iterations=2")
 	flag.StringVar(&firstSkaffoldFlags, "first-skaffold-flags", "", "flag opts to pass to first skaffold binary invocations")
 	flag.StringVar(&secondSkaffoldFlags, "second-skaffold-flags", "", "flag opts to pass to second skaffold binary invocations")
@@ -72,6 +76,12 @@ func init() {
 func main() {
 	ctx := context.Background()
 	flag.Parse()
+
+	var c conf
+	c.getConf()
+
+	fmt.Printf("%+v\n", c)
+	os.Exit(0)
 
 	if len(flag.Args()) < numBinaries+1 {
 		// time-comparison --first-skaffold-flags="--build-concurrency=true" \
@@ -156,4 +166,23 @@ func main() {
 	if err := ioutil.WriteFile(filepath.Join(workDir, commentPath), b.Bytes(), 0644); err != nil {
 		logrus.Fatal(err)
 	}
+}
+
+type conf struct {
+	Name               string `yaml:"name"`
+	FirstSkaffoldFlags string `yaml:"firstSkaffoldFlags"`
+}
+
+func (c *conf) getConf() *conf {
+
+	yamlFile, err := ioutil.ReadFile(yamlInputFile)
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+	err = yaml.Unmarshal(yamlFile, c)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
+
+	return c
 }

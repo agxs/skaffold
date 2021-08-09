@@ -5,7 +5,7 @@ on:
     types: [created]
 
 jobs:
-  run-performance-comparison-comment-v8:
+  run-performance-comparison-comment-v9:
     runs-on: ubuntu-latest
     steps:
     - name: Check out code into the Go module directory
@@ -13,18 +13,22 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Parse Comment For performance-comparison Args
+    - name: Parse Comment To Yaml Format
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+      working-directory: ./hack/time-comparison
       run: |
-        tail -n +2 <<< "${{ github.event.comment.body }}" > out.yaml
+        tail -n +2 <<< "${{ github.event.comment.body }}" > yaml-input-file.yaml
 
-    - name: Parse Comment For performance-comparison Args
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    # TODO(aaron-prindle) this should use a Makefile rule, not `go build .`
+    - name: Install Skaffold performance comparison
+      working-directory: ./hack/time-comparison
       run: |
-        cat out.yaml
+        go build .
+        chmod +x "${HOME}/work/skaffold/skaffold/hack/time-comparison/time-comparison"
+        sudo install "${HOME}/work/skaffold/skaffold/hack/time-comparison/time-comparison" /usr/local/bin
 
-    - name: yaml-lint
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      uses: ibiqlik/action-yamllint@v3
-      with:
-        file_or_dir: out.yaml
+    - name: Run performance comparison benchmarks
+      working-directory: ./hack/time-comparison
+      run: |
+        skaffold config set --global collect-metrics false
+        time-comparison-bin --yaml-input-file="yaml-input-file.yaml"
