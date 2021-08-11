@@ -144,12 +144,12 @@ func main() {
 }
 
 // TODO(aaron-prindle) finish
-type BinComparisonArgs struct {
+type ComparisonStatsArgs struct {
 	skaffoldBinaryPath string
 }
 
-func parseFlagArgs(args []string) BinComparisonArgs {
-	return BinComparisonArgs{
+func parseFlagArgs(args []string) ComparisonStatsArgs {
+	return ComparisonStatsArgs{
 		// skaffoldBinaryPath: args,
 		// skaffoldBinaryPath: args,
 	}

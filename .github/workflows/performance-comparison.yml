@@ -1,4 +1,4 @@
-name: performance comparison (on comment)
+name: performance comparison (on comment) - bar-v1
 
 on:
   issue_comment:
@@ -12,7 +12,7 @@ permissions: read-all
 
 jobs:
   build:
-    name: Performance comparison (on comment)
+    name: Performance comparison (on comment) - bar-v1
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -98,12 +98,6 @@ jobs:
       run: |
         make
         sudo install "${HOME}/work/skaffold/skaffold/out/skaffold" /usr/local/bin/skaffold
-
-    - name: Install Skaffold Metrics Collector
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        chmod +x "${HOME}/work/skaffold/skaffold/hack/metrics-collector"
-        sudo install "${HOME}/work/skaffold/skaffold/hack/metrics-collector" /usr/local/bin
 
     # checkout skaffold @ master and install as another binary
     - name: Install Skaffold from main branch (built from CI/CD on merge)
