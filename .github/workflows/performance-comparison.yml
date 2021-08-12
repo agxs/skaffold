@@ -126,11 +126,22 @@ jobs:
       working-directory: ./hack/comparisonstats
       run: |
         skaffold config set --global collect-metrics false
-        comparisonstats --summary-output-path=gh-comment.txt --yaml-input-file=yaml-input-file.yaml /usr/local/bin/skaffold-from-main-branch /usr/local/bin/skaffold helm-deployment main.go
+        echo "\"hello\" world!" >> gh-comment.txt
         echo 'PERFORMANCE_COMPARISON_MSG<<EOF' >> $GITHUB_ENV
         cat gh-comment.txt >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
         echo $PERFORMANCE_COMPARISON_MSG
+
+    # - name: Run performance comparison benchmarks
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   working-directory: ./hack/comparisonstats
+    #   run: |
+    #     skaffold config set --global collect-metrics false
+    #     comparisonstats --summary-output-path=gh-comment.txt --yaml-input-file=yaml-input-file.yaml /usr/local/bin/skaffold-from-main-branch /usr/local/bin/skaffold helm-deployment main.go
+    #     echo 'PERFORMANCE_COMPARISON_MSG<<EOF' >> $GITHUB_ENV
+    #     cat gh-comment.txt >> $GITHUB_ENV
+    #     echo 'EOF' >> $GITHUB_ENV
+    #     echo $PERFORMANCE_COMPARISON_MSG
 
     - name: Comment on PR
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
