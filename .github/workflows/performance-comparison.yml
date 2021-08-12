@@ -125,6 +125,7 @@ jobs:
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       working-directory: ./hack/comparisonstats
       run: |
+        echo "\"hello\"\n\n\n\nworld!" >> gh-comment.txt
         echo 'PERFORMANCE_COMPARISON_MSG<<EOF' >> $GITHUB_ENV
         cat gh-comment.txt >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
