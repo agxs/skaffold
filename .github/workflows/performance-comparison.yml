@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v3
+name: performance comparison (on comment) - bar-v4
 
 on:
   issue_comment:
@@ -12,7 +12,7 @@ permissions: read-all
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v3
+    name: Performance comparison (on comment) - bar-v4
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -127,7 +127,7 @@ jobs:
       run: |
         skaffold config set --global collect-metrics false
         comparisonstats --summary-output-path=gh-comment.txt --yaml-input-file=yaml-input-file.yaml /usr/local/bin/skaffold-from-main-branch /usr/local/bin/skaffold helm-deployment main.go
-        echo 'PERFORMANCE_COMPARISON_MSG=<<EOF' >> $GITHUB_ENV
+        echo 'PERFORMANCE_COMPARISON_MSG<<EOF' >> $GITHUB_ENV
         cat gh-comment.txt >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
         echo $PERFORMANCE_COMPARISON_MSG
