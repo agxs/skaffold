@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v15
+name: performance comparison (on comment) - bar-v16
 
 on:
   issue_comment:
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v15
+    name: Performance comparison (on comment) - bar-v16
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -160,7 +160,7 @@ jobs:
     - name: Create comment-1
       uses: peter-evans/create-or-update-comment@v1
       with:
-        issue-number: context.issue.number
+        issue-number: ${{ github.event.pull_request.number }}
         body: |
           This is a multi-line test comment
           - With GitHub **Markdown** :sparkles:
@@ -173,7 +173,5 @@ jobs:
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       uses: peter-evans/create-or-update-comment@v1
       with:
-        issue-number: context.issue.number
-        repository: context.repo.repo
-        token: ${{ secrets.GITHUB_TOKEN }}
+        issue-number: ${{ github.event.pull_request.number }}
         body: "${{ steps.get-comment-body.outputs.body }}"
