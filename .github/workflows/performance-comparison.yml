@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v17
+name: performance comparison (on comment) - bar-v18
 
 on:
   issue_comment:
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v17
+    name: Performance comparison (on comment) - bar-v18
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -160,7 +160,7 @@ jobs:
     - name: Create comment-1
       uses: peter-evans/create-or-update-comment@v1
       with:
-        issue-number: ${{ github.event.number }}
+        issue-number: 1
         body: |
           This is a multi-line test comment
           - With GitHub **Markdown** :sparkles:
