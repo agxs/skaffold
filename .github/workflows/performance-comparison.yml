@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v18
+name: performance comparison (on comment) - bar-v19
 
 on:
   issue_comment:
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v18
+    name: Performance comparison (on comment) - bar-v19
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -173,5 +173,5 @@ jobs:
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       uses: peter-evans/create-or-update-comment@v1
       with:
-        issue-number: ${{ github.event.number }}
+        issue-number: ${{ github.event.issue.number }}
         body: "${{ steps.get-comment-body.outputs.body }}"
