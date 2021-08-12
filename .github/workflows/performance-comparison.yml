@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v10
+name: performance comparison (on comment) - bar-v11
 
 on:
   issue_comment:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v10
+    name: Performance comparison (on comment) - bar-v11
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -122,6 +122,7 @@ jobs:
     #     tail -n +2 <<< '${{ github.event.comment.body }}' > yaml-input-file.yaml
 
     - name: Run performance comparison benchmarks
+      id: get-comment-body
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       working-directory: ./hack/comparisonstats
       run: |
@@ -142,14 +143,21 @@ jobs:
     #     echo 'EOF' >> $GITHUB_ENV
     #     echo $PERFORMANCE_COMPARISON_MSG
 
-    - name: Comment on PR
+    # - name: Comment on PR
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   uses: actions/github-script@v4
+    #   with:
+    #     script: |
+    #       github.issues.createComment({
+    #         issue_number: context.issue.number,
+    #         owner: context.repo.owner,
+    #         repo: context.repo.repo,
+    #         body: ${{ steps.get-comment-body.outputs.body }}
+    #       })
+
+    - name: Create comment
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      uses: actions/github-script@v4
+      uses: peter-evans/create-or-update-comment@v1
       with:
-        script: |
-          github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: ${{ steps.get-comment-body.outputs.body }}
-          })
+        issue-number: context.issue.number
+        body: ${{ steps.get-comment-body.outputs.body }}
