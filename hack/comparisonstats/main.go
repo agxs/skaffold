@@ -36,16 +36,16 @@ import (
 const numBinaries = 2
 
 type Config struct {
-	DevIterations       int64  `yaml:"devIterations,omitempty"`
-	FirstSkaffoldFlags  string `yaml:"firstSkaffoldFlags,omitempty"`
-	SecondSkaffoldFlags string `yaml:"secondSkaffoldFlags,omitempty"`
-	ExampleAppName      string `yaml:"exampleAppName,omitempty"`
-	ExampleSrcFile      string `yaml:"exampleSrcFile,omitempty"`
-	CommentText         string `yaml:"commentText,omitempty"`
+	DevIterations       int64  `yaml:"devIterations"`
+	FirstSkaffoldFlags  string `yaml:"firstSkaffoldFlags"`
+	SecondSkaffoldFlags string `yaml:"secondSkaffoldFlags"`
+	ExampleAppName      string `yaml:"exampleAppName"`
+	ExampleSrcFile      string `yaml:"exampleSrcFile"`
+	CommentText         string `yaml:"commentText"`
 }
 
 var (
-	conf              Config
+	conf              = &Config{}
 	yamlInputFile     string // TODO(aaron-prindle) FIX default used was yaml-input-file.yaml, make sure gh action doesn't depend on that
 	summaryOutputPath string
 )

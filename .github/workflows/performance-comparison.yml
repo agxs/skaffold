@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v2
+name: performance comparison (on comment) - bar-v3
 
 on:
   issue_comment:
@@ -12,7 +12,7 @@ permissions: read-all
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v2
+    name: Performance comparison (on comment) - bar-v3
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -119,12 +119,13 @@ jobs:
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       working-directory: ./hack/comparisonstats
       run: |
-        tail -n +2 <<< "${{ github.event.comment.body }}" > yaml-input-file.yaml
+        tail -n +2 <<< '${{ github.event.comment.body }}' > yaml-input-file.yaml
 
     - name: Run performance comparison benchmarks
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       working-directory: ./hack/comparisonstats
       run: |
+        skaffold config set --global collect-metrics false
         comparisonstats --summary-output-path=gh-comment.txt --yaml-input-file=yaml-input-file.yaml /usr/local/bin/skaffold-from-main-branch /usr/local/bin/skaffold helm-deployment main.go
         echo 'PERFORMANCE_COMPARISON_MSG=<<EOF' >> $GITHUB_ENV
         cat gh-comment.txt >> $GITHUB_ENV
@@ -142,7 +143,3 @@ jobs:
             repo: context.repo.repo,
             body: $PERFORMANCE_COMPARISON_MSG
           })
-
-#         skaffold config set --global collect-metrics false
-#         comparisonstats --summary-output-path=gh-comment.txt --yaml-input-file=yaml-input-file.yaml /usr/local/bin/skaffold-from-main-branch /usr/local/bin/skaffold helm-deployment main.go
-# TODO(aaron-prindle) add back ^^^?
