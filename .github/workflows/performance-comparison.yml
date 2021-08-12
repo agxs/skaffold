@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v4
+name: performance comparison (on comment) - bar-v5
 
 on:
   issue_comment:
@@ -12,7 +12,7 @@ permissions: read-all
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v4
+    name: Performance comparison (on comment) - bar-v5
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -141,5 +141,5 @@ jobs:
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: $PERFORMANCE_COMPARISON_MSG
+            body: '${{ env.PERFORMANCE_COMPARISON_MSG }}'
           })
