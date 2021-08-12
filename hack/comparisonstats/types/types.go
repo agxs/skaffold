@@ -50,7 +50,7 @@ func (ts timeSlice) stdDev() time.Duration {
 func (cs *ComparisonStats) String() string {
 	var b bytes.Buffer
 
-	fmt.Fprintln(&b, "==========")
+	fmt.Fprintln(&b, "")
 	fmt.Fprintf(&b, "information for %v for %d iterations of %s:\n", cs.BinaryPath, cs.DevIterations, cs.CmdArgs)
 	fmt.Fprintf(&b, "binary size: %v\n", util.HumanReadableBytesSizeSI(cs.BinarySize))
 	fmt.Fprintf(&b, "initial loop build, deploy, status-check times: %v\n", []time.Duration{
