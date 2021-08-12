@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v21
+name: performance comparison (on comment) - bar-v22
 
 on:
   issue_comment:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v21
+    name: Performance comparison (on comment) - bar-v22
     runs-on: ubuntu-latest
     strategy:
       matrix:
