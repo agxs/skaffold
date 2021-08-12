@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v5
+name: performance comparison (on comment) - bar-v7
 
 on:
   issue_comment:
@@ -7,12 +7,12 @@ on:
 # TODO(aaron-prindle) verify permissions are setup correctly to allow for 
 # - label removal (label edit/delete)
 # - ability to comment (comment edit/create)
-permissions: read-all
+# permissions: read-all
 
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v5
+    name: Performance comparison (on comment) - bar-v7
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -42,91 +42,89 @@ jobs:
     #     NON_DOCS_FILES_CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.sha }}| grep -v '^docs/' || true) 
     #     echo "NON_DOCS_FILES_CHANGED=${#NON_DOCS_FILES_CHANGED}" >> $GITHUB_ENV  # get the char len of diff output (used later)
 
-    - name: Install Kustomize
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        wget -O kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${{ matrix.kustomize_version }}/kustomize_v${{ matrix.kustomize_version }}_linux_amd64.tar.gz
-        sudo tar -xvf kustomize.tar.gz -C /usr/local/bin/
+    # - name: Install Kustomize
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run: |
+    #     wget -O kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${{ matrix.kustomize_version }}/kustomize_v${{ matrix.kustomize_version }}_linux_amd64.tar.gz
+    #     sudo tar -xvf kustomize.tar.gz -C /usr/local/bin/
 
-    - name: Install Ko
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        wget -O ko.tar.gz https://github.com/google/ko/releases/download/v${{ matrix.ko_version }}/ko_${{ matrix.ko_version }}_Linux_x86_64.tar.gz
-        sudo tar -xvf ko.tar.gz -C /usr/local/bin/
+    # - name: Install Ko
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run: |
+    #     wget -O ko.tar.gz https://github.com/google/ko/releases/download/v${{ matrix.ko_version }}/ko_${{ matrix.ko_version }}_Linux_x86_64.tar.gz
+    #     sudo tar -xvf ko.tar.gz -C /usr/local/bin/
 
-    - name: Install Kompose
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        wget -O kompose https://github.com/kubernetes/kompose/releases/download/v${{ matrix.kompose_version }}/kompose-linux-amd64 && chmod +x kompose
-        sudo mv kompose /usr/local/bin/
+    # - name: Install Kompose
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run: |
+    #     wget -O kompose https://github.com/kubernetes/kompose/releases/download/v${{ matrix.kompose_version }}/kompose-linux-amd64 && chmod +x kompose
+    #     sudo mv kompose /usr/local/bin/
 
-    - name: Install GCloud
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        wget -O gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud_sdk_version }}-linux-x86_64.tar.gz
-        tar -xvf gcloud.tar.gz -C ${HOME}/
-        CLOUDSDK_PYTHON="python2.7" ${HOME}/google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --disable-installation-options
-        echo "${HOME}/google-cloud-sdk/bin" >> $GITHUB_PATH
+    # - name: Install GCloud
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run: |
+    #     wget -O gcloud.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${{ matrix.gcloud_sdk_version }}-linux-x86_64.tar.gz
+    #     tar -xvf gcloud.tar.gz -C ${HOME}/
+    #     CLOUDSDK_PYTHON="python2.7" ${HOME}/google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --disable-installation-options
+    #     echo "${HOME}/google-cloud-sdk/bin" >> $GITHUB_PATH
 
-    - name: Configure GCloud with Docker
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run:  gcloud auth configure-docker
+    # - name: Configure GCloud with Docker
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run:  gcloud auth configure-docker
 
-    - name: Install Container Structure Test
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        wget -O container-structure-test https://storage.googleapis.com/container-structure-test/v${{ matrix.container_structure_tests_version }}/container-structure-test-linux-amd64 && chmod +x container-structure-test
-        sudo mv container-structure-test /usr/local/bin/
+    # - name: Install Container Structure Test
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run: |
+    #     wget -O container-structure-test https://storage.googleapis.com/container-structure-test/v${{ matrix.container_structure_tests_version }}/container-structure-test-linux-amd64 && chmod +x container-structure-test
+    #     sudo mv container-structure-test /usr/local/bin/
 
-    - name: Setup other files and permissions
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        sudo chown $(whoami):docker ${HOME}/.docker -R
-        sudo chmod g+rw ${HOME}/.docker -R
-        echo '{}' > ${HOME}/.docker/config.json
-        mkdir -p ${HOME}/.m2/ && cp ./hack/maven/settings.xml ${HOME}/.m2/settings.xml
+    # - name: Setup other files and permissions
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run: |
+    #     sudo chown $(whoami):docker ${HOME}/.docker -R
+    #     sudo chmod g+rw ${HOME}/.docker -R
+    #     echo '{}' > ${HOME}/.docker/config.json
+    #     mkdir -p ${HOME}/.m2/ && cp ./hack/maven/settings.xml ${HOME}/.m2/settings.xml
         
-    - name: Install Minikube from minikube master branch @HEAD and start cluster
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        curl -Lo minikube https://storage.googleapis.com/minikube-builds/master/minikube-linux-amd64
-        sudo install minikube /usr/local/bin/minikube
-        minikube start --profile=minikube --driver=docker
+    # - name: Install Minikube from minikube master branch @HEAD and start cluster
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run: |
+    #     curl -Lo minikube https://storage.googleapis.com/minikube-builds/master/minikube-linux-amd64
+    #     sudo install minikube /usr/local/bin/minikube
+    #     minikube start --profile=minikube --driver=docker
 
-    - name: Make and install Skaffold binary from current PR
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }} # non docs files were changed, skaffold build needed
-      run: |
-        make
-        sudo install "${HOME}/work/skaffold/skaffold/out/skaffold" /usr/local/bin/skaffold
+    # - name: Make and install Skaffold binary from current PR
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }} # non docs files were changed, skaffold build needed
+    #   run: |
+    #     make
+    #     sudo install "${HOME}/work/skaffold/skaffold/out/skaffold" /usr/local/bin/skaffold
 
-    # checkout skaffold @ master and install as another binary
-    - name: Install Skaffold from main branch (built from CI/CD on merge)
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      run: |
-        curl -Lo skaffold-from-main-branch https://storage.googleapis.com/skaffold/builds/latest/skaffold-linux-amd64 && \
-        sudo install skaffold-from-main-branch /usr/local/bin/
+    # # checkout skaffold @ master and install as another binary
+    # - name: Install Skaffold from main branch (built from CI/CD on merge)
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   run: |
+    #     curl -Lo skaffold-from-main-branch https://storage.googleapis.com/skaffold/builds/latest/skaffold-linux-amd64 && \
+    #     sudo install skaffold-from-main-branch /usr/local/bin/
 
-    # TODO(aaron-prindle) this should use a Makefile rule, not `go build .`
-    - name: Install Skaffold performance comparison
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      working-directory: ./hack/comparisonstats
-      run: |
-        go build .
-        chmod +x "${HOME}/work/skaffold/skaffold/hack/comparisonstats/comparisonstats"
-        sudo install "${HOME}/work/skaffold/skaffold/hack/comparisonstats/comparisonstats" /usr/local/bin
+    # # TODO(aaron-prindle) this should use a Makefile rule, not `go build .`
+    # - name: Install Skaffold performance comparison
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   working-directory: ./hack/comparisonstats
+    #   run: |
+    #     go build .
+    #     chmod +x "${HOME}/work/skaffold/skaffold/hack/comparisonstats/comparisonstats"
+    #     sudo install "${HOME}/work/skaffold/skaffold/hack/comparisonstats/comparisonstats" /usr/local/bin
 
-    - name: Parse Comment To Yaml Format
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      working-directory: ./hack/comparisonstats
-      run: |
-        tail -n +2 <<< '${{ github.event.comment.body }}' > yaml-input-file.yaml
+    # - name: Parse Comment To Yaml Format
+    #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+    #   working-directory: ./hack/comparisonstats
+    #   run: |
+    #     tail -n +2 <<< '${{ github.event.comment.body }}' > yaml-input-file.yaml
 
     - name: Run performance comparison benchmarks
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       working-directory: ./hack/comparisonstats
       run: |
-        skaffold config set --global collect-metrics false
-        echo "\"hello\" world!" >> gh-comment.txt
         echo 'PERFORMANCE_COMPARISON_MSG<<EOF' >> $GITHUB_ENV
         cat gh-comment.txt >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
