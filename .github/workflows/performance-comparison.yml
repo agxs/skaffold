@@ -1,19 +1,16 @@
-name: performance comparison (on comment) - bar-v20
+name: performance comparison (on comment) - bar-v21
 
 on:
   issue_comment:
     types: [created]
 
-# TODO(aaron-prindle) verify permissions are setup correctly to allow for 
-# - label removal (label edit/delete)
-# - ability to comment (comment edit/create)
 permissions:
   pull-requests: write
   issues: write
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v20
+    name: Performance comparison (on comment) - bar-v21
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -123,6 +120,7 @@ jobs:
         tail -n +2 <<< '${{ github.event.comment.body }}' > yaml-input-file.yaml
 
     - name: Run performance comparison benchmarks
+      id: run-performance-comparison-benchmarks
       if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
       working-directory: ./hack/comparisonstats
       run: |
@@ -139,4 +137,4 @@ jobs:
       uses: peter-evans/create-or-update-comment@v1
       with:
         issue-number: ${{ github.event.issue.number }}
-        body: "${{ steps.get-comment-body.outputs.body }}"
+        body: "${{ steps.run-performance-comparison-benchmarks.outputs.body }}"
