@@ -1,4 +1,4 @@
-name: performance comparison (on comment) - bar-v12
+name: performance comparison (on comment) - bar-v13
 
 on:
   issue_comment:
@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Performance comparison (on comment) - bar-v12
+    name: Performance comparison (on comment) - bar-v13
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -143,22 +143,22 @@ jobs:
     #     echo 'EOF' >> $GITHUB_ENV
     #     echo $PERFORMANCE_COMPARISON_MSG
 
-    - name: Comment on PR
-      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-      uses: actions/github-script@v4
-      with:
-        script: |
-          github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: "${{ steps.get-comment-body.outputs.body }}"
-          })
-
-    # - name: Create comment
+    # - name: Comment on PR
     #   if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
-    #   uses: peter-evans/create-or-update-comment@v1
+    #   uses: actions/github-script@v4
     #   with:
-    #     issue-number: context.issue.number
-    #     token: ${{ secrets.GITHUB_TOKEN }}
-    #     body: ${{ steps.get-comment-body.outputs.body }}
+    #     script: |
+    #       github.issues.createComment({
+    #         issue_number: context.issue.number,
+    #         owner: context.repo.owner,
+    #         repo: context.repo.repo,
+    #         body: ${{ steps.get-comment-body.outputs.body }}
+    #       })
+
+    - name: Create comment
+      if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        issue-number: context.issue.number
+        token: ${{ secrets.GITHUB_TOKEN }}
+        body: "${{ steps.get-comment-body.outputs.body }}"
