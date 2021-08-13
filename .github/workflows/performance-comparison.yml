@@ -5,11 +5,12 @@ on:
     types: [created]
 
 permissions:
+  contents: read
   pull-requests: write
 
 jobs:
   build:
-    if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }} && ${{ github.event.issue.pull_request }}
+    if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }}
     name: Performance comparison (on comment)
     runs-on: ubuntu-latest
     strategy:
@@ -20,7 +21,6 @@ jobs:
         gcloud_sdk_version: [335.0.0]
         container_structure_tests_version: [1.8.0]
     steps:
-
     - name: "Check if user has write access"
       uses: "lannonbr/repo-permission-check-action@2bb8c89ba8bf115c4bfab344d6a6f442b24c9a1f"
       with:
@@ -88,10 +88,13 @@ jobs:
         sudo install minikube /usr/local/bin/minikube
         minikube start --profile=minikube --driver=docker
 
+    - uses: xt0rted/pull-request-comment-branch@v1
+      id: comment-branch
+
     - name: Make and install Skaffold binary from current PR
       run: |
         make
-        sudo install "${HOME}/work/skaffold/skaffold/out/skaffold" /usr/local/bin/skaffold-${{ github.event.pull_request.head.sha }}
+        sudo install "${HOME}/work/skaffold/skaffold/out/skaffold" /usr/local/bin/skaffold-${{ steps.comment-branch.outputs.head_ref }}
 
     - name: Install Skaffold from main branch (built from CI/CD on merge)
       run: |
@@ -106,7 +109,7 @@ jobs:
       id: run-performance-comparison-benchmarks
       run: |
         /usr/local/bin/skaffold-${{ github.event.pull_request.head.sha }} config set --global collect-metrics false
-        make COMPARISONSTATS_ARGS='--summary-output-path=gh-comment.txt --yaml-input-file=yaml-input-file.yaml --warmup-runs=1 /usr/local/bin/skaffold-from-main-branch /usr/local/bin/skaffold-${{ github.event.pull_request.head.sha }} helm-deployment main.go "//per-dev-iteration-comment"' comparisonstats
+        make COMPARISONSTATS_ARGS='--summary-output-path=gh-comment.txt --yaml-input-file=yaml-input-file.yaml --warmup-runs=1 /usr/local/bin/skaffold-from-main-branch /usr/local/bin/skaffold-${{ steps.comment-branch.outputs.head_ref }} helm-deployment main.go "//per-dev-iteration-comment"' comparisonstats
         body=$(cat gh-comment.txt)
         body="${body//'%'/'%25'}"
         body="${body//$'\n'/'%0A'}"
