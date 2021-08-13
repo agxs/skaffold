@@ -27,8 +27,8 @@ func ParseComparisonStatsCmdArgs(args []string) ComparisonStatsCmdArgs {
 
 type Config struct {
 	DevIterations       int64  `yaml:"devIterations"`
-	FirstSkaffoldFlags  string `yaml:"firstSkaffoldFlags"`
-	SecondSkaffoldFlags string `yaml:"secondSkaffoldFlags"`
+	FirstSkaffoldFlags  string `yaml:"mainBranchSkaffoldFlags"` // NOTE: names mismatched for make vs gh action UX usage
+	SecondSkaffoldFlags string `yaml:"thisPRSkaffoldFlags"`
 	ExampleAppName      string `yaml:"exampleAppName"`
 	ExampleSrcFile      string `yaml:"exampleSrcFile"`
 	CommentText         string `yaml:"commentText"`
@@ -68,7 +68,7 @@ func (cs *ComparisonStatsSummary) String() string {
 
 	fmt.Fprintln(&b, "")
 	fmt.Fprintf(&b, "information for %v for %d iterations of %s:\n", cs.BinaryPath, cs.DevIterations, cs.CmdArgs)
-	fmt.Fprintf(&b, "binary size: %v\n", util.HumanReadableBytesSizeSI(cs.BinarySize))
+	fmt.Fprintf(&b, "binary size: %v\n", util.HumanReadableBytesSizeIEC(cs.BinarySize))
 	fmt.Fprintf(&b, "initial loop build, deploy, status-check times: %v\n", []time.Duration{
 		cs.DevLoopEventDurations.InitialBuildTime, cs.DevLoopEventDurations.InitialDeployTime, cs.DevLoopEventDurations.InitialStatusCheckTime})
 	fmt.Fprintf(&b, "inner loop build time avg: %s\n", cs.DevLoopEventDurations.InnerBuildTimes.avg())
