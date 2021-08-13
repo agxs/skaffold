@@ -36,18 +36,15 @@ func Dev(ctx context.Context, app types.Application, skaffoldBinaryPath string, 
 		return nil, fmt.Errorf("copying app and testdata to temp dir: %w", err)
 	}
 
-	// TODO(aaron-prindle) add back
-	// defer os.RemoveAll(app.Context)
+	defer os.RemoveAll(app.Context)
 
 	port := util.GetAvailablePort(util.Loopback, 8080, &util.PortSet{})
 
 	buf := bytes.NewBuffer([]byte{})
 
-	// TODO(aaron-prindle) investigate why seeing prune issues w/o the  --no-prune=true flag
+	// TODO(aaron-prindle) investigate why seeing prune issues w/o the  --no-prune=true flag - https://gist.github.com/aaron-prindle/48fa79954913202f23b02ea6356b556d
 	cmdArgs := []string{"dev", "--enable-rpc", fmt.Sprintf("--rpc-port=%v", port),
 		fmt.Sprintf("--event-log-file=%s", eventsFileAbsPath), "--cache-artifacts=false", "--no-prune=true"}
-	// fmt.Sprintf("--event-log-file=%s", eventsFileAbsPath), "--cache-artifacts=false"}
-	// fmt.Sprintf("--event-log-file=%s", eventsFileAbsPath), "--cache-artifacts=false", "--no-prune=true", "--status-check=false"}
 
 	logrus.Infof("flagOpts: %v\n", flagOpts)
 	for _, opt := range flagOpts {
@@ -85,8 +82,7 @@ func Dev(ctx context.Context, app types.Application, skaffoldBinaryPath string, 
 	if err := cmd.Process.Signal(os.Interrupt); err != nil {
 		return nil, fmt.Errorf("killing skaffold: %w", err)
 	}
-	// TODO(aaron-prindle) event's file not created sometimes?? maybe not waiting long enough? look for actual event hook/callback?
-	time.Sleep(8 * time.Second)
+	time.Sleep(5 * time.Second)
 	return &DevInfo{CmdArgs: cmd.Args}, wait.Poll(time.Second, 2*time.Minute, func() (bool, error) {
 		contents, err := ioutil.ReadFile(eventsFileAbsPath)
 		return err == nil && len(contents) > 0, nil
@@ -107,13 +103,8 @@ func copyAppToTmpDir(app *types.Application) error {
 	return nil
 }
 
-// TODO(aaron-prindle) have ability to undo change
-// isn't needed actually! can just keep adding a comment
-// head -n -2 myfile.txt
 func kickoffDevLoop(ctx context.Context, app types.Application) error {
-	// TODO(aaron-prindle) added sleep as runs are flaking - see https://gist.github.com/aaron-prindle/23762f6a0d712c2586b10f04b1820636
-	// also see this on cleanup... https://gist.github.com/aaron-prindle/48fa79954913202f23b02ea6356b556d
-	time.Sleep(2 * time.Second)
+	// TODO(aaron-prindle) added sleep as some runs are flaking, might need to slow this down? - see https://gist.github.com/aaron-prindle/23762f6a0d712c2586b10f04b1820636
 	args := strings.Split(app.Dev.Command, " ")
 	logrus.Infof("arglen: %v, Parsed args [%v]", len(args), args)
 	cmd := exec.CommandContext(ctx, "sh", "-c", app.Dev.Command)

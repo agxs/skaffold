@@ -105,7 +105,7 @@ func main() {
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		defer events.Cleanup(eventsFileAbsPath)
+		defer os.Remove(eventsFileAbsPath)
 
 		if i < warmupRuns {
 			continue

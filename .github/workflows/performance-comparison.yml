@@ -6,13 +6,10 @@ on:
 
 permissions:
   pull-requests: write
-  issues: write
 
 jobs:
   build:
-    if: |
-      ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }} &&
-      ${{ github.event.issue.pull_request }}
+    if: ${{ startsWith(github.event.comment.body, '/run-performance-comparison') }} && ${{ github.event.issue.pull_request }}
     name: Performance comparison (on comment)
     runs-on: ubuntu-latest
     strategy:

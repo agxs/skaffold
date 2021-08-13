@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"strings"
 	"time"
 
@@ -17,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ParseEventDuration collects and aggregates metrics for the inner loop from an events file
+// ParseEventDuration collects and aggregates metrics for the initial + inner loops from an events file
 func ParseEventDuration(ctx context.Context, eventsFileAbsPath string) (*types.DevLoopTimes, error) {
 	logEntries, err := getFromFile(eventsFileAbsPath)
 	if err != nil {
@@ -111,8 +110,4 @@ func getFromFile(fp string) ([]v1.LogEntry, error) {
 		return nil, errors.Wrapf(err, "reading %s", fp)
 	}
 	return get(contents)
-}
-
-func Cleanup(fp string) {
-	defer os.Remove(fp)
 }
