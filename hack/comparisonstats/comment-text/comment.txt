@@ -7,5 +7,4 @@ devIterations: 2 # number of dev iterations to run per binary
 \#firstSkaffoldFlags: "--build-concurrency=0" # NOTE: only supports one flag
 \#secondSkaffoldFlags: "--build-concurrency=1" # NOTE: only supports one flag
 
-\#the run-performance-comparison job will add a rocket emoji to your comment within ~30 seconds if it kicked off successfully
-\#baz-v8
+\#run-performance-comparison job adds a rocket emoji to your comment within ~30 seconds if kicked off successfully (refreshing might be required to see this)
