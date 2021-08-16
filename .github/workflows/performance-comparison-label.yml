@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    if: ${{ github.event.label.name == 'help:run-performance-comparison' }}
+    if: ${{ github.event.label.name == 'help:run-comparisonstats' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -18,7 +18,7 @@ jobs:
       uses: actions-ecosystem/action-remove-labels@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        labels: help:run-performance-comparison
+        labels: help:run-comparisonstats
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
