@@ -27,6 +27,7 @@ import (
 	"github.com/docker/distribution/reference"
 	"k8s.io/client-go/tools/clientcmd/api"
 
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/cluster"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/config"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/docker"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/graph"
@@ -37,8 +38,9 @@ import (
 )
 
 type ImageLoader struct {
-	kubeContext string
-	cli         *kubectl.CLI
+	kubeContext     string
+	cli             *kubectl.CLI
+	minikubeProfile string
 }
 
 type Config interface {
@@ -48,10 +50,11 @@ type Config interface {
 	LoadImages() bool
 }
 
-func NewImageLoader(kubeContext string, cli *kubectl.CLI) *ImageLoader {
+func NewImageLoader(kubeContext string, cli *kubectl.CLI, minikubeProfile string) *ImageLoader {
 	return &ImageLoader{
-		kubeContext: kubeContext,
-		cli:         cli,
+		kubeContext:     kubeContext,
+		cli:             cli,
+		minikubeProfile: minikubeProfile,
 	}
 }
 
@@ -109,6 +112,21 @@ func (i *ImageLoader) LoadImages(ctx context.Context, out io.Writer, localImages
 		}
 	}
 
+	if cluster.GetClient().IsMinikube(ctx, i.kubeContext) {
+		// TODO(aaron-prindle) verify this is piped through properly
+		// minikubeProfile := r.runCtx.MinikubeProfile()
+		minikubeProfile := i.minikubeProfile
+
+		if minikubeProfile == "" {
+			minikubeProfile = i.kubeContext
+		}
+
+		// With `kind`, docker images have to be loaded with the `kind` CLI.
+		if err := i.loadImagesInMinikubeNodes(ctx, out, minikubeProfile, artifacts); err != nil {
+			return fmt.Errorf("loading images into minikube nodes: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -125,6 +143,14 @@ func (i *ImageLoader) loadImagesInK3dNodes(ctx context.Context, out io.Writer, k
 	output.Default.Fprintln(out, "Loading images into k3d cluster nodes...")
 	return i.loadImages(ctx, out, artifacts, func(tag string) *exec.Cmd {
 		return exec.CommandContext(ctx, "k3d", "image", "import", "--cluster", k3dCluster, tag)
+	})
+}
+
+// loadImagesInMinikubeNodes loads artifact images into every node of a k3s cluster.
+func (i *ImageLoader) loadImagesInMinikubeNodes(ctx context.Context, out io.Writer, minikubeProfile string, artifacts []graph.Artifact) error {
+	output.Default.Fprintln(out, "Loading images into minikube cluster nodes...")
+	return i.loadImages(ctx, out, artifacts, func(tag string) *exec.Cmd {
+		return exec.CommandContext(ctx, "minikube", "image", "load", "--profile", minikubeProfile, tag)
 	})
 }
 

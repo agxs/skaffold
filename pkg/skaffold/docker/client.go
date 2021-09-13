@@ -76,10 +76,8 @@ func NewAPIClientImpl(ctx context.Context, cfg Config) (LocalDaemon, error) {
 
 // newAPIClient guesses the docker client to use based on current Kubernetes context.
 func newAPIClient(ctx context.Context, kubeContext string, minikubeProfile string) ([]string, client.CommonAPIClient, error) {
-	if minikubeProfile != "" { // skip validation if explicitly specifying minikubeProfile.
-		return newMinikubeAPIClient(ctx, minikubeProfile)
-	}
-	if cluster.GetClient().IsMinikube(ctx, kubeContext) {
+	// skip validation if explicitly specifying minikubeProfile.
+	if minikubeProfile != "" || cluster.GetClient().IsMinikube(ctx, kubeContext) && cluster.GetClient().UseDockerEnv(ctx) {
 		return newMinikubeAPIClient(ctx, kubeContext)
 	}
 	return newEnvAPIClient()
@@ -181,9 +179,9 @@ func getUserAgentHeader() map[string]string {
 }
 
 func getMinikubeDockerEnv(ctx context.Context, minikubeProfile string) (map[string]string, error) {
-	if minikubeProfile == "" {
-		return nil, fmt.Errorf("empty minikube profile")
-	}
+	// if minikubeProfile == "" {
+	// 	return nil, fmt.Errorf("empty minikube profile")
+	// }
 	cmd, err := cluster.GetClient().MinikubeExec(ctx, "docker-env", "--shell", "none", "-p", minikubeProfile)
 	if err != nil {
 		return nil, fmt.Errorf("executing minikube command: %w", err)

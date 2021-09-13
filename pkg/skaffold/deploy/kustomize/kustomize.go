@@ -154,7 +154,7 @@ func NewDeployer(cfg kubectl.Config, labeller *label.DefaultLabeller, d *latestV
 		accessor:            component.NewAccessor(cfg, cfg.GetKubeContext(), kubectl.CLI, podSelector, labeller, &namespaces),
 		debugger:            component.NewDebugger(cfg.Mode(), podSelector, &namespaces, cfg.GetKubeContext()),
 		hookRunner:          hooks.NewDeployRunner(kubectl.CLI, d.LifecycleHooks, &namespaces, logger.GetFormatter(), hooks.NewDeployEnvOpts(labeller.GetRunID(), kubectl.KubeContext, namespaces)),
-		imageLoader:         component.NewImageLoader(cfg, kubectl.CLI),
+		imageLoader:         component.NewImageLoader(cfg, kubectl.CLI, cfg.MinikubeProfile()),
 		logger:              logger,
 		statusMonitor:       component.NewMonitor(cfg, cfg.GetKubeContext(), labeller, &namespaces),
 		syncer:              component.NewSyncer(kubectl.CLI, &namespaces, logger.GetFormatter()),

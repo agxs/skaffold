@@ -105,7 +105,7 @@ func NewDeployer(cfg Config, labeller *label.DefaultLabeller, d *latestV1.Kubect
 		namespaces:         &namespaces,
 		accessor:           component.NewAccessor(cfg, cfg.GetKubeContext(), kubectl.CLI, podSelector, labeller, &namespaces),
 		debugger:           component.NewDebugger(cfg.Mode(), podSelector, &namespaces, cfg.GetKubeContext()),
-		imageLoader:        component.NewImageLoader(cfg, kubectl.CLI),
+		imageLoader:        component.NewImageLoader(cfg, kubectl.CLI, cfg.MinikubeProfile()),
 		logger:             logger,
 		statusMonitor:      component.NewMonitor(cfg, cfg.GetKubeContext(), labeller, &namespaces),
 		syncer:             component.NewSyncer(kubectl.CLI, &namespaces, logger.GetFormatter()),

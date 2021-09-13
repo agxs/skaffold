@@ -182,7 +182,7 @@ func TestGetDefaultDeployer(tOuter *testing.T) {
 		t.Override(&component.NewMonitor, func(k8sstatus.Config, string, *label.DefaultLabeller, *[]string) status.Monitor {
 			return &status.NoopMonitor{}
 		})
-		t.Override(&component.NewImageLoader, func(k8sloader.Config, *pkgkubectl.CLI) loader.ImageLoader {
+		t.Override(&component.NewImageLoader, func(k8sloader.Config, *pkgkubectl.CLI, string) loader.ImageLoader {
 			return &loader.NoopImageLoader{}
 		})
 		t.Override(&component.NewSyncer, func(*pkgkubectl.CLI, *[]string, k8slogger.Formatter) sync.Syncer {

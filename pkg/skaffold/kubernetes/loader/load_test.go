@@ -159,7 +159,7 @@ func runImageLoadingTests(t *testing.T, tests []ImageLoadingTest, loadingFunc fu
 				KubeContext: "kubecontext",
 			}
 
-			i := NewImageLoader(runCtx.KubeContext, kubectl.NewCLI(runCtx, ""))
+			i := NewImageLoader(runCtx.KubeContext, kubectl.NewCLI(runCtx, ""), "")
 			err := loadingFunc(i, test)
 
 			if test.shouldErr {

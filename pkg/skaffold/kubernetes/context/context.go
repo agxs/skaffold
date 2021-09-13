@@ -72,10 +72,12 @@ func GetRestClientConfig(kubeContext string) (*restclient.Config, error) {
 
 // GetClusterInfo returns the Cluster information for the given kubeContext
 func GetClusterInfo(kctx string) (*clientcmdapi.Cluster, error) {
-	rawConfig, err := getCurrentConfig()
+	rawConfig, err := CurrentConfig()
 	if err != nil {
 		return nil, err
 	}
+	// todo: should look up the context in rawConfig.Contexts and
+	// then map to the context's cluster
 	c, found := rawConfig.Clusters[kctx]
 	if !found {
 		return nil, fmt.Errorf("failed to get cluster info for kubeContext: `%s`", kctx)
@@ -86,7 +88,7 @@ func GetClusterInfo(kctx string) (*clientcmdapi.Cluster, error) {
 func getRestClientConfig(kctx string, kcfg string) (*restclient.Config, error) {
 	log.Entry(context.TODO()).Debugf("getting client config for kubeContext: `%s`", kctx)
 
-	rawConfig, err := getCurrentConfig()
+	rawConfig, err := CurrentConfig()
 	if err != nil {
 		return nil, err
 	}

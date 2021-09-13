@@ -206,9 +206,13 @@ func GetCluster(ctx context.Context, configFile string, minikubeProfile string, 
 	}
 
 	kubeContext := cfg.Kubecontext
+	// TODO(aaron-prindle) refactor using this?
+	// isKindCluster, isK3dCluster := IsKindCluster(kubeContext), IsK3dCluster(kubeContext)
 	isKindCluster, isK3dCluster := IsKindCluster(kubeContext), IsK3dCluster(kubeContext)
 
-	var local bool
+	local := false
+	loadImages := false
+
 	switch {
 	case minikubeProfile != "":
 		local = true
@@ -217,14 +221,23 @@ func GetCluster(ctx context.Context, configFile string, minikubeProfile string, 
 		log.Entry(context.TODO()).Infof("Using local-cluster=%t from config", *cfg.LocalCluster)
 		local = *cfg.LocalCluster
 
-	case kubeContext == constants.DefaultMinikubeContext ||
-		kubeContext == constants.DefaultDockerForDesktopContext ||
-		kubeContext == constants.DefaultDockerDesktopContext ||
-		isKindCluster || isK3dCluster:
+	case IsKindCluster(kubeContext):
+		local = true
+		loadImages = cfg.KindDisableLoad == nil || !*cfg.KindDisableLoad
+
+	case IsK3dCluster(kubeContext):
+		local = true
+		loadImages = cfg.K3dDisableLoad == nil || !*cfg.K3dDisableLoad
+
+	case kubeContext == constants.DefaultDockerForDesktopContext ||
+		kubeContext == constants.DefaultDockerDesktopContext:
 		local = true
 
 	case detectMinikube:
-		local = cluster.GetClient().IsMinikube(ctx, kubeContext)
+		minikubeClient := cluster.GetClient()
+		// minikubeClient := cluster.GetClient(kubeContext, minikubeProfile)
+		local = minikubeClient.IsMinikube(ctx, kubeContext)
+		loadImages = local && !minikubeClient.UseDockerEnv(ctx)
 
 	default:
 		local = false
@@ -234,7 +247,12 @@ func GetCluster(ctx context.Context, configFile string, minikubeProfile string, 
 	k3dDisableLoad := cfg.K3dDisableLoad != nil && *cfg.K3dDisableLoad
 
 	// load images for local kind/k3d cluster unless explicitly disabled
-	loadImages := local && ((isKindCluster && !kindDisableLoad) || (isK3dCluster && !k3dDisableLoad))
+	// loadImages := local && ((isKindCluster && !kindDisableLoad) || (isK3dCluster && !k3dDisableLoad))
+
+	// TODO(aaron-prindle) refactor using this?
+	// loadImages := local && ((isKindCluster && !kindDisableLoad) || (isK3dCluster && !k3dDisableLoad)) ||
+	// 	(minikubeClient != nil && minikubeLoadImages)
+	loadImages = loadImages && local
 
 	// push images for remote cluster or local kind/k3d cluster with image loading disabled
 	pushImages := !local || (isKindCluster && kindDisableLoad) || (isK3dCluster && k3dDisableLoad)
