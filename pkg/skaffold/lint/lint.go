@@ -20,13 +20,14 @@ import (
 	"context"
 	"io"
 
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/runner/runcontext"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/util"
 )
 
 var realWorkDir = util.RealWorkDir
 
-func Lint(ctx context.Context, out io.Writer, opts Options) error {
-	skaffoldYamlRuleList, err := GetSkaffoldYamlsLintResults(ctx, opts)
+func Lint(ctx context.Context, out io.Writer, opts Options, runCtx *runcontext.RunContext) error {
+	skaffoldYamlRuleList, err := GetSkaffoldYamlsLintResults(ctx, opts, runCtx)
 	if err != nil {
 		return err
 	}

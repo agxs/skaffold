@@ -19,6 +19,7 @@ package lint
 import (
 	"fmt"
 
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/parser"
 	"go.lsp.dev/protocol"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
@@ -38,24 +39,31 @@ type Options struct {
 }
 
 type Rule struct {
-	RuleID         RuleID
-	RuleType       RuleType
-	Explanation    string
-	Severity       protocol.DiagnosticSeverity
-	Filter         interface{}
-	LintConditions []func(string) bool
+	RuleID               RuleID
+	RuleType             RuleType
+	ExplanationTemplate  string
+	Severity             protocol.DiagnosticSeverity
+	Filter               interface{}
+	ExplanationPopulator func(LintInputs) (explanationInfo, error)
+	LintConditions       []func(LintInputs) bool
+}
+
+type explanationInfo struct {
+	FieldMap map[string]string
 }
 
 type Result struct {
 	Rule        *Rule
 	AbsFilePath string
 	RelFilePath string
+	Explanation string
 	Line        int
 	Column      int
 }
 
 type YamlFieldFilter struct {
 	Filter      yaml.Filter
+	FieldOnly   string
 	InvertMatch bool
 }
 
@@ -82,12 +90,20 @@ const (
 	DummyRuleIDForTesting RuleID = iota
 
 	SkaffoldYamlAPIVersionOutOfDate
+	SkaffoldYamlUseStaticPort
+	SkaffoldYamlSyncPython
 )
 
 func (a RuleID) String() string {
 	return fmt.Sprintf("ID%06d", a+1)
 }
 
+type LintInputs struct {
+	ConfigFile         ConfigFile
+	DockerfileToDepMap map[string][]string
+	SkaffoldConfig     *parser.SkaffoldConfigEntry
+}
+
 type Linter interface {
-	Lint(ConfigFile, *[]Rule) (*[]Result, error)
+	Lint(LintInputs, *[]Rule) (*[]Result, error)
 }

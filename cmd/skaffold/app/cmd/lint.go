@@ -35,15 +35,32 @@ func NewCmdLint() *cobra.Command {
 			{Value: &outFormat, Name: "format", DefValue: lint.PlainTextOutput,
 				Usage: "Output format. One of: plain-text(default) or json"}}).
 		Hidden().
-		NoArgs(lintCmd)
+		NoArgs(doLint)
 }
 
-func lintCmd(ctx context.Context, out io.Writer) error {
+// func lintCmd(ctx context.Context, out io.Writer) error {
+// 	return lint.Lint(ctx, out, lint.Options{
+// 		Filename:     opts.ConfigurationFile,
+// 		RepoCacheDir: opts.RepoCacheDir,
+// 		OutFormat:    outFormat,
+// 		Modules:      opts.ConfigurationFilter,
+// 		Profiles:     opts.Profiles,
+// 	})
+// }
+
+func doLint(ctx context.Context, out io.Writer) error {
+	_, _, runCtx, err := createRunner(ctx, out, opts)
+	// runner, config, runCtx, err := createRunner(ctx, out, opts)
+	if err != nil {
+		return err
+	}
+	// err = action(runner, config)
+	// return alwaysSucceedWhenCancelled(ctx, runCtx, err)
 	return lint.Lint(ctx, out, lint.Options{
 		Filename:     opts.ConfigurationFile,
 		RepoCacheDir: opts.RepoCacheDir,
 		OutFormat:    outFormat,
 		Modules:      opts.ConfigurationFilter,
 		Profiles:     opts.Profiles,
-	})
+	}, runCtx)
 }

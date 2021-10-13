@@ -64,7 +64,7 @@ func TestGetSkaffoldYamlsLintResults(t *testing.T) {
 							},
 							RuleID:   SkaffoldYamlAPIVersionOutOfDate,
 							RuleType: YamlFieldLintRule,
-							Explanation: fmt.Sprintf("Found 'apiVersion' field with value that is not the latest skaffold apiVersion. Modify the apiVersion to the latest version: `apiVersion: %s` "+
+							ExplanationTemplate: fmt.Sprintf("Found 'apiVersion' field with value that is not the latest skaffold apiVersion. Modify the apiVersion to the latest version: `apiVersion: %s` "+
 								"or run the 'skaffold fix' command to have skaffold upgrade this for you.", version.Get().ConfigVersion),
 						},
 						Line:   1,
@@ -79,7 +79,7 @@ func TestGetSkaffoldYamlsLintResults(t *testing.T) {
 							},
 							RuleID:   SkaffoldYamlAPIVersionOutOfDate,
 							RuleType: YamlFieldLintRule,
-							Explanation: fmt.Sprintf("Found 'apiVersion' field with value that is not the latest skaffold apiVersion. Modify the apiVersion to the latest version: `apiVersion: %s` "+
+							ExplanationTemplate: fmt.Sprintf("Found 'apiVersion' field with value that is not the latest skaffold apiVersion. Modify the apiVersion to the latest version: `apiVersion: %s` "+
 								"or run the 'skaffold fix' command to have skaffold upgrade this for you.", version.Get().ConfigVersion),
 						},
 						Line:   1,
@@ -101,7 +101,7 @@ func TestGetSkaffoldYamlsLintResults(t *testing.T) {
 							},
 							RuleID:   SkaffoldYamlAPIVersionOutOfDate,
 							RuleType: YamlFieldLintRule,
-							Explanation: fmt.Sprintf("Found 'apiVersion' field with value that is not the latest skaffold apiVersion. Modify the apiVersion to the latest version: `apiVersion: %s` "+
+							ExplanationTemplate: fmt.Sprintf("Found 'apiVersion' field with value that is not the latest skaffold apiVersion. Modify the apiVersion to the latest version: `apiVersion: %s` "+
 								"or run the 'skaffold fix' command to have skaffold upgrade this for you.", version.Get().ConfigVersion),
 						},
 						Line:   1,
