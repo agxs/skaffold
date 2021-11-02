@@ -31,6 +31,7 @@ import (
 )
 
 func main() {
+	log.Entry(context.TODO()).Infof("hello world!")
 	if _, ok := os.LookupEnv("SKAFFOLD_PROFILER"); ok {
 		err := profiler.Start(profiler.Config{
 			Service:              os.Getenv("SKAFFOLD_PROFILER_SERVICE"),
