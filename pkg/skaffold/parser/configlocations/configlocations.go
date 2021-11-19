@@ -99,18 +99,23 @@ func (m *YAMLInfos) LocateField(obj interface{}, fieldName string) *Location {
 }
 
 func (m *YAMLInfos) locate(obj interface{}, key string) *Location {
-	kind := reflect.ValueOf(obj).Kind()
+	if m == nil {
+		log.Entry(context.TODO()).Infof("YamlInfos is nil, unable to complete call to locate with params: %v of type %T", obj, obj)
+		return MissingLocation()
+	}
+	v := reflect.ValueOf(obj)
+	kind := v.Kind()
 	if kind != reflect.Ptr {
-		log.Entry(context.TODO()).Infof("non pointer object passed to Locate: %v of type %T", obj, obj)
+		log.Entry(context.TODO()).Infof("non pointer object passed to locate: %v of type %T", obj, obj)
 		return MissingLocation()
 	}
-	if _, ok := m.YamlInfos[reflect.ValueOf(obj).Pointer()]; !ok {
-		log.Entry(context.TODO()).Infof("no map entry found when attempting Locate for %v of type %T and pointer: %d", obj, obj, reflect.ValueOf(obj).Pointer())
+	if _, ok := m.YamlInfos[v.Pointer()]; !ok {
+		log.Entry(context.TODO()).Infof("no map entry found when attempting locate for %v of type %T and pointer: %d", obj, obj, v.Pointer())
 		return MissingLocation()
 	}
-	node, ok := m.YamlInfos[reflect.ValueOf(obj).Pointer()][key]
+	node, ok := m.YamlInfos[v.Pointer()][key]
 	if !ok {
-		log.Entry(context.TODO()).Infof("no map entry found when attempting Locate for %v of type %T and pointer: %d", obj, obj, reflect.ValueOf(obj).Pointer())
+		log.Entry(context.TODO()).Infof("no map entry found when attempting locate for %v of type %T and pointer: %d", obj, obj, v.Pointer())
 		return MissingLocation()
 	}
 	// iterate over kyaml.RNode text to get endline and endcolumn information
@@ -118,7 +123,7 @@ func (m *YAMLInfos) locate(obj interface{}, key string) *Location {
 	if err != nil {
 		return MissingLocation()
 	}
-	log.Entry(context.TODO()).Infof("map entry found when executing Locate for %v of type %T and pointer: %d", obj, obj, reflect.ValueOf(obj).Pointer())
+	log.Entry(context.TODO()).Infof("map entry found when executing locate for %v of type %T and pointer: %d", obj, obj, v.Pointer())
 	lines, cols := getLinesAndColsOfString(nodeText)
 
 	// TODO(aaron-prindle) all line & col values seem 1 greater than expected in actual use, will need to check to see how it works with IDE
