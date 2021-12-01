@@ -25,9 +25,11 @@ import (
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/output/log"
 )
 
+var ReadConfiguration = readConfiguration
+
 // ReadConfiguration reads a `skaffold.yaml` configuration and
 // returns its content.
-func ReadConfiguration(filename string) ([]byte, error) {
+func readConfiguration(filename string) ([]byte, error) {
 	switch {
 	case filename == "":
 		return nil, errors.New("filename not specified")

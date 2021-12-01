@@ -19,9 +19,11 @@ package lsp
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 
 	"go.lsp.dev/jsonrpc2"
@@ -34,7 +36,8 @@ import (
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/output/log"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/runner"
 	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/runner/runcontext"
-	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/schema/util"
+	schemautil "github.com/GoogleContainerTools/skaffold/pkg/skaffold/schema/util"
+	"github.com/GoogleContainerTools/skaffold/pkg/skaffold/util"
 )
 
 var h Handler
@@ -56,9 +59,40 @@ func NewHandler(conn jsonrpc2.Conn) *Handler {
 	}
 }
 
-func GetHandler(conn jsonrpc2.Conn, out io.Writer, opts config.SkaffoldOptions, createRunner func(ctx context.Context, out io.Writer, opts config.SkaffoldOptions) (runner.Runner, []util.VersionedConfig, *runcontext.RunContext, error)) jsonrpc2.Handler {
+// ReadConfiguration reads a `skaffold.yaml` configuration and
+// returns its content.
+func readConfiguration(filename string) ([]byte, error) {
+	switch {
+	case filename == "":
+		return nil, errors.New("filename not specified")
+	case filename == "-":
+		return nil, errors.New("stdin not supported for lsp functionality")
+	case util.IsURL(filename):
+		return nil, errors.New("remote skaffold.yaml files not supported for lsp functionality")
+	default:
+		fp := filename
+		if !filepath.IsAbs(fp) {
+			// TODO(aaron-prindle) see if I should use util.RealWorkDir?, ioutil uses os.Getwd...
+			dir, err := os.Getwd()
+			if err != nil {
+				return nil, err
+			}
+			fp = filepath.Join(dir, fp)
+		}
+		// perhaps this should fetch and cache?
+
+		// TODO(aaron-prindle) 'documents' is empty max, there is ordering issue....
+		contents := h.documentManager.GetDocument(fp)
+		return []byte(contents), nil
+	}
+}
+
+func GetHandler(conn jsonrpc2.Conn, out io.Writer, opts config.SkaffoldOptions, createRunner func(ctx context.Context, out io.Writer, opts config.SkaffoldOptions) (runner.Runner, []schemautil.VersionedConfig, *runcontext.RunContext, error)) jsonrpc2.Handler {
 	var runCtx *runcontext.RunContext
 	h = *NewHandler(conn)
+	// TODO(aaron-prindle) refactor to do this via a less hacky method...
+	util.ReadConfiguration = readConfiguration
+	// now that this is set, Parse will use this readConfiguration that uses virtual FS vs. util method that reads from normal FS
 
 	return func(ctx context.Context, reply jsonrpc2.Replier, req jsonrpc2.Request) error {
 		// Recover if a panic occurs in the handlers
