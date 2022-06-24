@@ -225,7 +225,8 @@ func (l *localDaemon) Run(ctx context.Context, out io.Writer, opts ContainerCrea
 		Mounts:       opts.Mounts,
 	}
 
-	c, err := l.apiClient.ContainerCreate(ctx, opts.ContainerConfig, hCfg, nil, nil, opts.Name)
+	c, err := l.apiClient.ContainerCreate(ctx, opts.ContainerConfig, hCfg, nil, nil, opts.VerifyTestName)
+	// c, err := l.apiClient.ContainerCreate(ctx, opts.ContainerConfig, hCfg, nil, nil, opts.Name)
 	if err != nil {
 		return nil, nil, "", err
 	}

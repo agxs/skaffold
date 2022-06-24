@@ -183,6 +183,8 @@ func (v *Verifier) createAndRunContainer(ctx context.Context, out io.Writer, art
 	if len(tc.Container.Args) != 0 {
 		containerCfg.Cmd = tc.Container.Args
 	}
+	// TODO(aaron-prindle) currently containerName derived from image name
+	// the way this is used, might make sense to have verify-name be used instead
 	containerName := v.getContainerName(ctx, artifact.ImageName)
 	opts := dockerutil.ContainerCreateOpts{
 		Name:            containerName,
