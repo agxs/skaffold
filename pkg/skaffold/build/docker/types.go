@@ -44,7 +44,7 @@ type TransitiveSourceDependenciesResolver interface {
 	TransitiveArtifactDependencies(ctx context.Context, a *latest.Artifact) ([]string, error)
 }
 
-// NewBuilder returns an new instance of a docker builder
+// NewArtifactBuilder returns a new instance of a docker builder
 func NewArtifactBuilder(localDocker docker.LocalDaemon, cfg docker.Config, useCLI bool, useBuildKit *bool, pushImages bool, ar ArtifactResolver, dr TransitiveSourceDependenciesResolver) *Builder {
 	return &Builder{
 		localDocker:        localDocker,
