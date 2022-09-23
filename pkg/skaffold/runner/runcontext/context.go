@@ -145,6 +145,17 @@ func (ps Pipelines) TransformDenyList() []latest.ResourceFilter {
 	return denylist
 }
 
+func (ps Pipelines) StatusCheckTolerateFailures() bool {
+	failureTolerance := false
+	// set the group status check deadline to maximum of any individually specified value
+	for _, p := range ps.pipelines {
+		if p.Deploy.TolerateFailures {
+			failureTolerance = true
+		}
+	}
+	return failureTolerance
+}
+
 func (ps Pipelines) StatusCheckDeadlineSeconds() int {
 	c := 0
 	// set the group status check deadline to maximum of any individually specified value
@@ -155,6 +166,7 @@ func (ps Pipelines) StatusCheckDeadlineSeconds() int {
 	}
 	return c
 }
+
 func NewPipelines(pipelinesByConfig map[string]latest.Pipeline) Pipelines {
 	m := make(map[string]latest.Pipeline)
 	var pipelines []latest.Pipeline
@@ -189,6 +201,10 @@ func (rc *RunContext) TestCases() []*latest.TestCase { return rc.Pipelines.TestC
 
 func (rc *RunContext) StatusCheckDeadlineSeconds() int {
 	return rc.Pipelines.StatusCheckDeadlineSeconds()
+}
+
+func (rc *RunContext) StatusCheckTolerateFailures() bool {
+	return rc.Opts.TolerateFailuresStatusCheck || rc.Pipelines.StatusCheckTolerateFailures()
 }
 
 func (rc *RunContext) SkipTests() bool {

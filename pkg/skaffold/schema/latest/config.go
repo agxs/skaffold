@@ -689,6 +689,11 @@ type DeployConfig struct {
 	// StatusCheckDeadlineSeconds *beta* is the deadline for deployments to stabilize in seconds.
 	StatusCheckDeadlineSeconds int `yaml:"statusCheckDeadlineSeconds,omitempty"`
 
+	// TolerateFailures configures the Skaffold "status-check" to tolerate failures
+	// (flapping deployments, etc.) until the statusCheckDeadlineSeconds duration or k8s object
+	// timeouts such as progressDeadlineSeconds, etc.
+	TolerateFailures bool `yaml:"tolerateFailures,omitempty"`
+
 	// KubeContext is the Kubernetes context that Skaffold should deploy to.
 	// For example: `minikube`.
 	KubeContext string `yaml:"kubeContext,omitempty"`
